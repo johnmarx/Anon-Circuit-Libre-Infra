@@ -1,55 +1,34 @@
-Role Name
-Role Name
-=========
+# Tor_kali
 
-A brief description of the role goes here.
+## Comment se rendre totalement annonyme. 
 
-Requirements
-------------
+Mise en place d'une infra sur une vm distante d'un provider assurant l'anonyma du client. Cette vm est composé de vpn et d'un container Kali. L'utilisateur se connecte par un service Tor sur au container kali assurant ainsi son anonyma complet. 
 
-Any pre-requisites that may not be covered by Ansible itself or the role should
-be mentioned here. For instance, if the role uses the EC2 module, it may be a
-good idea to mention in this section that the boto package is required.
+Les vpn on une configuration gérer par ansible et donc leurs nombre dépend uniquement des capacité de l'hôte. Si l'ip d'un vpn est bloqué, on passe automatiquement sur l'autre vpn. De même si une ip deviens connu et ciblé. 
+On assure ansi une continuité de service ainsi que l'anonyma de l'utilisateur.
 
-Role Variables
---------------
+## description
 
-Installation des configurations réseaux
+L'utilisateur utilise un client tor pour passer par le réseaux tor grâce à une clé.
+Les services vpn sur la machine distante sont déployer avec ansible, le container Kali aussi. Il est configurer et mis à jour automatiquement. 
 
-- net 
 
-Provisionnement de paquet
+![](https://i.imgur.com/NGtj52C.png)
 
-- pi
+## Implantation logique 
+### 1 serveur
 
-Configuration du circuit
+Sur le serveur distant on install le service tor. Puis dans /etc/tor/ on configure le service. Nous voulons une connection ssh par tor. Donc: 
 
-- Circuit 
 
-Dependencies
-------------
+hiddenServiceDir /var/lib/tor/hidden_service/ssh
+hiddenService /var/lib/tor/hidden_service/ssh 22 127.0.0.1:33022 
+Puis on crée un syslink et on démarre le service.
+On récupère ensuite l'adresse de notre relais ainsi que la clé privé. Enfin on desactive la connection ssh par mot de passe.
+cat /var/lib/tor/hidden_service/ssh/hostnam
 
-A list of other roles hosted on Galaxy should go here, plus any details in
-regards to parameters that may need to be set for other roles, or variables that
-are used from other roles.
-
-Example Playbook
-----------------
-
-Including an example of how to use your role (for instance, with variables
-passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: anon-test, x: 42 }
-
-License
--------
-
-GPLv3
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a
-website (HTML is not allowed).
+### 2 client
+Pour le client, on install aussi le service tor, puis on configure les DNS sur le relais de notre serveur:
+'    ProxyCommand nc -X 5 -x localhost:9050 <serveurrelaisaddr>.onion 33022 configure le service ssh pour utilisé le service tor.
+  
+Participants: Yannick COURRIAN, Elie BEN AYOUN, John MARX. 
